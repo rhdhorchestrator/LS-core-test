@@ -1,0 +1,49 @@
+services:
+  # This config is just to have full details with ollama llamastack
+  # llama-stackb:
+  #   image: docker.io/llamastack/distribution-ollama
+  #   container_name: llama-stackb
+  #   ports:
+  #     - "8322:8321"  # Expose llama-stack on 8321 (adjust if needed) environment:
+  #     - OLLAMA_URL=${OLLAMA_HOST}
+  #     - INFERENCE_MODEL=gemma3:27b-it-qat
+  #   networks:
+  #     - lightspeednet
+
+  llama-stack:
+    image: docker.io/llamastack/distribution-ollama
+    container_name: llama-stack
+    ports:
+      - "8321:8321"  # Expose llama-stack on 8321 (adjust if needed)
+    volumes:
+      - ./run-llama-stack.yaml:/app-root/run.yaml:Z
+    entrypoint: ["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app-root/run.yaml"]
+    environment:
+      - OLLAMA_HOST=${OLLAMA_HOST}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8321/v1/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - lightspeednet
+
+  lightspeed-stack:
+    image: quay.io/lightspeed-core/lightspeed-stack:latest
+    container_name: lightspeed-stack
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config.yaml:/app-root/lightspeed-stack.yaml:Z
+    # environment:
+    #   - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      llama-stack:
+        condition: service_healthy
+    networks:
+      - lightspeednet
+
+networks:
+  lightspeednet:
+    driver: bridge

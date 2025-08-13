@@ -1,0 +1,26 @@
+name: Test LSCore
+service:
+  host: 0.0.0.0
+  port: 8080
+  auth_enabled: false
+  workers: 1
+  color_log: true
+  access_log: true
+llama_stack:
+  use_as_library_client: false
+  url: http://llama-stack:8321
+user_data_collection:
+  feedback_enabled: true
+  feedback_storage: "/tmp/data/feedback"
+  transcripts_enabled: true
+  transcripts_storage: "/tmp/data/transcripts"
+authentication:
+  module: "noop"
+
+mcp_servers:
+  - name: "server1"
+    provider_id: "model-context-protocol"
+    url: "http://host.docker.internal:8000"
+inference:
+  default_model: gemma3:27b-it-qat
+  default_provider: ollama

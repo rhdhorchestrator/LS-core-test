@@ -1,0 +1,43 @@
+version: '2'
+image_name: ollama-llama-stack-config
+apis:
+  - inference
+  - safety
+  - tool_runtime
+  - telemetry
+
+models:
+- model_id: gemma3:27b-it-qat
+  identifier: ollama/gemma3:27b-it-qat
+  model_type: llm
+  provider_id: ollama
+  provider_model_id: null
+
+providers:
+  inference:
+    - config:
+        url: ${env.OLLAMA_HOST}
+      provider_id: ollama
+      provider_type: remote::ollama
+
+  tool_runtime:
+    - provider_id: model-context-protocol
+      provider_type: remote::model-context-protocol
+      config: {}
+
+  telemetry:
+    - config:
+        service_name: ''
+        sinks: console,sqlite
+        sqlite_db_path: /tmp/trace_store.db
+      provider_id: meta-reference
+      provider_type: inline::meta-reference
+
+metadata_store:
+  type: sqlite
+  db_path: /tmp/registry.db
+  namespace: null
+
+inference_store:
+  type: sqlite
+  db_path: /tmp/inference_store.db
