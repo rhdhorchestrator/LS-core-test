@@ -22,5 +22,5 @@ mcp_servers:
     provider_id: "model-context-protocol"
     url: "http://host.docker.internal:8000"
 inference:
-  default_model: gemma3:27b-it-qat
-  default_provider: ollama
+  default_model: vllm-inference/gemma3:27b-it-qat
+  default_provider: vllm-inference

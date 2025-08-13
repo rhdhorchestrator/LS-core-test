@@ -103,8 +103,8 @@ ls::test() {
               "attachments": [],
               "model": "gemma3:27b-it-qat",
               "no_tools": false,
-              "provider": "ollama",
+              "provider": "vllm-inference",
               "query": "write a deployment yaml for the mongodb image"
             }
-        ' | jq .
+        '
 }

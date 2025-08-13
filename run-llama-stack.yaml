@@ -6,20 +6,15 @@ apis:
   - tool_runtime
   - telemetry
 
-models:
-- model_id: gemma3:27b-it-qat
-  identifier: ollama/gemma3:27b-it-qat
-  model_type: llm
-  provider_id: ollama
-  provider_model_id: null
-
 providers:
   inference:
-    - config:
-        url: ${env.OLLAMA_HOST}
-      provider_id: ollama
-      provider_type: remote::ollama
-
+    - provider_id: vllm-inference
+      provider_type: remote::vllm
+      config:
+        url: ${env.VLLM_URL:=http://localhost:8000/v1}
+        max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
+        api_token: ${env.VLLM_API_TOKEN:=fake}
+        tls_verify: ${env.VLLM_TLS_VERIFY:=false}
   tool_runtime:
     - provider_id: model-context-protocol
       provider_type: remote::model-context-protocol
@@ -27,7 +22,7 @@ providers:
 
   telemetry:
     - config:
-        service_name: ''
+        service_name: 'llama-stack'
         sinks: console,sqlite
         sqlite_db_path: /tmp/trace_store.db
       provider_id: meta-reference

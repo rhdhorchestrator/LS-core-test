@@ -1,25 +1,20 @@
 services:
-  # This config is just to have full details with ollama llamastack
-  # llama-stackb:
-  #   image: docker.io/llamastack/distribution-ollama
-  #   container_name: llama-stackb
-  #   ports:
-  #     - "8322:8321"  # Expose llama-stack on 8321 (adjust if needed) environment:
-  #     - OLLAMA_URL=${OLLAMA_HOST}
-  #     - INFERENCE_MODEL=gemma3:27b-it-qat
-  #   networks:
-  #     - lightspeednet
-
   llama-stack:
-    image: docker.io/llamastack/distribution-ollama
+    image: docker.io/llamastack/distribution-starter
     container_name: llama-stack
     ports:
       - "8321:8321"  # Expose llama-stack on 8321 (adjust if needed)
     volumes:
       - ./run-llama-stack.yaml:/app-root/run.yaml:Z
-    entrypoint: ["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app-root/run.yaml"]
+    entrypoint: ["python", "-m", "llama_stack.core.server.server"]
+    command: ["/app-root/run.yaml", "--port", "8321"]
     environment:
       - OLLAMA_HOST=${OLLAMA_HOST}
+      - VLLM_URL=${VLLM_URL}
+      - VLLM_API_TOKEN=test
+      - VLLM_MAX_TOKENS=4096
+      - VLLM_TLS_VERIFY=false
+      - INFERENCE_MODEL=gemma3:27b-it-qat
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8321/v1/health"]
       interval: 10s
