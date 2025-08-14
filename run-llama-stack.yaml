@@ -1,12 +1,35 @@
 version: '2'
 image_name: ollama-llama-stack-config
 apis:
+  - agents
   - inference
   - safety
-  - tool_runtime
   - telemetry
+  - tool_runtime
+  - vector_io
 
 providers:
+  vector_io:
+    - config:
+        kvstore:
+          db_path: /tmp/faiss_store.db
+          type: sqlite
+      provider_id: faiss
+      provider_type: inline::faiss
+
+  agents:
+  - config:
+      persistence_store:
+        db_path: /tmp/agents_store.db
+        namespace: null
+        type: sqlite
+      responses_store:
+        db_path: /tmp/responses_store.db
+        type: sqlite
+    provider_id: meta-reference
+    provider_type: inline::meta-reference
+
+
   inference:
     - provider_id: vllm-inference
       provider_type: remote::vllm
@@ -15,10 +38,12 @@ providers:
         max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
         api_token: ${env.VLLM_API_TOKEN:=fake}
         tls_verify: ${env.VLLM_TLS_VERIFY:=false}
+
   tool_runtime:
     - provider_id: model-context-protocol
       provider_type: remote::model-context-protocol
       config: {}
+      module: null
 
   telemetry:
     - config:
