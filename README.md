@@ -98,7 +98,9 @@ source test-functions.sh
 | `llama::list_providers()` | List provider IDs |
 | `llama::list_providers_full()` | List providers (full details) |
 | `llama::list_tools()` | List available tools (may return error if tools not configured) |
+| `llama::list_toolgroups()` | List available tools groups |
 | `llama::chat_completion()` | Test chat completion with sample query |
+| `llama::list_agents()` | List created agents in llamastack |
 
 ### Lightspeed-Stack Functions
 
@@ -108,6 +110,8 @@ source test-functions.sh
 | `ls::config()` | Get complete service configuration |
 | `ls::models()` | List available models |
 | `ls::test()` | Test query endpoint with sample request |
+| `ls::stest()` | Test query endpoint with sample request (streaming) |
+| `ls::conversation()` | Retrieve conversation request |
 
 ## Testing LLaMA-Stack with Functions
 

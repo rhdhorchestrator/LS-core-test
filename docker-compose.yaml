@@ -3,13 +3,15 @@ services:
     image: docker.io/llamastack/distribution-starter
     container_name: llama-stack
     ports:
-      - "8321:8321"  # Expose llama-stack on 8321 (adjust if needed)
+      - "8321:8321"
     volumes:
       - ./run-llama-stack.yaml:/app-root/run.yaml:Z
+    # entrypoint: ["sleep", "10000h"]
     entrypoint: ["python", "-m", "llama_stack.core.server.server"]
     command: ["/app-root/run.yaml", "--port", "8321"]
     environment:
       - OLLAMA_HOST=${OLLAMA_HOST}
+      - LLAMA_STACK_LOG=DEBUG
       - VLLM_URL=${VLLM_URL}
       - VLLM_API_TOKEN=test
       - VLLM_MAX_TOKENS=4096
@@ -17,8 +19,8 @@ services:
       - INFERENCE_MODEL=gemma3:27b-it-qat
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8321/v1/health"]
-      interval: 10s
-      timeout: 10s
+      interval: 5s
+      timeout: 5s
       retries: 5
       start_period: 5s
     networks:
@@ -31,8 +33,6 @@ services:
       - "8080:8080"
     volumes:
       - ./config.yaml:/app-root/lightspeed-stack.yaml:Z
-    # environment:
-    #   - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       llama-stack:
         condition: service_healthy

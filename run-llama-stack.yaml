@@ -7,6 +7,20 @@ apis:
   - telemetry
   - tool_runtime
   - vector_io
+logging:
+  level: DEBUG  # Set root logger to DEBUG
+  category_levels:
+    llama_stack: DEBUG  # Enable DEBUG for all llama_stack modules
+    llama_stack.providers.remote.inference.vllm: DEBUG
+    llama_stack.providers.inline.agents.meta_reference: DEBUG
+    llama_stack.providers.inline.agents.meta_reference.agent_instance: DEBUG
+    llama_stack.providers.inline.vector_io.faiss: DEBUG
+    llama_stack.providers.inline.telemetry.meta_reference: DEBUG
+    llama_stack.core: DEBUG
+    llama_stack.apis: DEBUG
+    uvicorn: DEBUG
+    uvicorn.access: INFO  # Keep HTTP requests at INFO to reduce noise
+    fastapi: DEBUG
 
 providers:
   vector_io:

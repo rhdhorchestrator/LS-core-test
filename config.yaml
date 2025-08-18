@@ -8,7 +8,8 @@ service:
   access_log: true
 llama_stack:
   use_as_library_client: false
-  url: http://llama-stack:8321
+  # url: http://llama-stack:8321
+  url: "http://host.docker.internal:8321"
 user_data_collection:
   feedback_enabled: true
   feedback_storage: "/tmp/data/feedback"
@@ -20,7 +21,7 @@ authentication:
 mcp_servers:
   - name: "server1"
     provider_id: "model-context-protocol"
-    url: "http://host.docker.internal:8000"
+    url: "http://host.docker.internal:8000/mcp/"
 inference:
-  default_model: vllm-inference/gemma3:27b-it-qat
+  default_model: vllm-inference/qwen3:4b
   default_provider: vllm-inference
