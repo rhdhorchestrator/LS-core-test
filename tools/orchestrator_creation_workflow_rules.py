@@ -55,7 +55,7 @@ RULES = """
 ### Function Definition Structure
 Each function MUST have exactly these three fields:
 - `name`: Unique function identifier (string, used in functionRef.refName)
-- `type`: Function type (must be one of: "custom", "rest", "rpc")
+- `type`: Function type (must be one of: "asyncapi", "custom" "expression", "graphql", "odata", "rest", "rpc")
 - `operation`: Operation specification (format depends on type)
 
 ### Function Types & Operations
@@ -96,6 +96,16 @@ For gRPC services: `<proto-file>#<ServiceName>#<MethodName>`
   "name": "listUsers",
   "type": "rpc",
   "operation": "file://myuserservice.proto#UserService#ListUsers"
+}
+```
+
+#### 4. Expression Functions (`"type": "expression"`)
+For gRPC services: `<proto-file>#<ServiceName>#<MethodName>`
+```json
+{
+  "name": "increasePlanRetries",
+  "type": "expression",
+  "operation": ".planRetries=.planRetries + 1"
 }
 ```
 
