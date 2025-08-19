@@ -47,7 +47,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./mcp_server.py:/app/mcp_server.py
+      - ./mcp_server.py:/app/mcp_server.py:z
     command: uv run python mcp_server.py
     restart: unless-stopped
     healthcheck:
