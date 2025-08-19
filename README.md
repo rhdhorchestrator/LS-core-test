@@ -18,7 +18,7 @@ This project creates a Docker Compose setup with two main services:
 ### Using podman-compose
 
 ```bash
-export OLLAMA_HOST="http://192.168.2.5:11434"
+export VLLM_URL="http://SERVER_IP:11434/v1"
 podman-compose up -d
 ```
 

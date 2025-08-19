@@ -10,7 +10,6 @@ services:
     entrypoint: ["python", "-m", "llama_stack.core.server.server"]
     command: ["/app-root/run.yaml", "--port", "8321"]
     environment:
-      - OLLAMA_HOST=${OLLAMA_HOST}
       - LLAMA_STACK_LOG=DEBUG
       - VLLM_URL=${VLLM_URL}
       - VLLM_API_TOKEN=test
