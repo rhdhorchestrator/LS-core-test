@@ -1,9 +1,8 @@
 from fastmcp import FastMCP
-import os
-import datetime
-from typing import Dict, List
-import shutil
 import logging
+from tools.orchestrator_service import orchestrator_mcp
+import tools.get_orchestrator_instances
+import tools.orchestrator_creation_workflow_rules
 
 # Set up logging to see what's happening
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -13,23 +12,8 @@ mcp = FastMCP(
     name="Current Date and Time", port=8000
 )
 
-
-@mcp.tool()
-def get_orchestrator_instances(session_id):
-    logger.info(f"get_orchestrator_instances for session_id='{session_id}'")
-    """
-    return the list of orchestrator instances registered in Backstage or RHDH (Red Hat developer Hub)
-    """
-    return {
-        'total': 5,
-        'data': [
-            {"name": "process_payment_refunds", "status": "RUNNING"},
-            {"name": "sync_inventory_updates", "status": "READY"},
-            {"name": "generate_monthly_reports", "status": "RUNNING"},
-            {"name": "backup_customer_data", "status": "FAILED"},
-            {"name": "send_welcome_emails", "status": "COMPLETED"}
-        ]
-    }
+# Mount the orchestrator service
+mcp.mount(orchestrator_mcp, prefix="orchestrator")
 
 
 
