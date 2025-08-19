@@ -27,6 +27,7 @@ RULES = """
 - `functions`: Array of function definitions (can be empty but must be present)
 - `states`: Array of state definitions (must have at least one state)
 - `errors`: Array of error definitions (can be empty but must be present)
+- `events`: Array of event definitions (optional but recommended for event-driven workflows)
 
 ### Workflow Flow Rules:
 - Every state MUST either have `"end": true` OR a valid `transition` field
@@ -46,7 +47,8 @@ RULES = """
     "start": "CheckApplication",
     "functions": [ ],
     "states":[],
-    "errors": []
+    "errors": [],
+    "events": []
 }
 ```
 
@@ -234,6 +236,69 @@ Executes functions and handles business logic:
 - States without transitions MUST have `"end": true`
 - State names MUST be unique within the workflow
 - The workflow MUST have exactly one state with `"end": true` (the terminal state)
+
+## Events
+
+### Event Definition Structure
+Events enable asynchronous, event-driven workflows. Each event MUST have these required fields:
+- `name`: Unique event identifier (string, used in event references)
+- `source`: CloudEvent source (required for consumed events)
+- `type`: CloudEvent type (string, defines the event category)
+- `kind`: Event direction - "consumed" (default) or "produced"
+
+### Event Definition Examples
+
+#### Consumed Event (receives external events)
+```json
+{
+  "name": "orderReceived",
+  "source": "orders.service",
+  "type": "com.example.orders.received",
+  "kind": "consumed"
+}
+```
+
+#### Produced Event (sends events to external systems)
+```json
+{
+  "name": "orderProcessed",
+  "type": "com.example.orders.processed",
+  "kind": "produced"
+}
+```
+
+### Event States
+Event states wait for and handle CloudEvents:
+
+```json
+{
+  "name": "WaitForOrder",
+  "type": "event",
+  "onEvents": [
+    {
+      "eventRefs": ["orderReceived"],
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "processOrder"
+          }
+        }
+      ]
+    }
+  ],
+  "timeouts": {
+    "eventTimeout": "PT1H"
+  },
+  "transition": "OrderProcessed"
+}
+```
+
+### Event Handling Rules:
+- All `eventRefs` MUST reference existing event names from the events array
+- Event states MUST have `onEvents` array with at least one entry
+- Use `timeouts.eventTimeout` for event waiting limits (ISO 8601 duration format)
+- Consider error handling for event timeout scenarios
+- Events can carry data accessible in subsequent states via `.eventData`
 """
 
 @orchestrator_mcp.tool()
