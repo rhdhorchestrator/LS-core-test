@@ -37,7 +37,7 @@ RULES = """
 - No orphaned states (unreachable states) are allowed
 - Ensure proper error handling for all critical operations
 ```json
-{{
+{
     "id": "myworkflowid",
     "version": "1.0",
     "specVersion": "0.8",
@@ -47,7 +47,7 @@ RULES = """
     "functions": [ ],
     "states":[],
     "errors": []
-}}
+}
 ```
 
 ## Functions
@@ -72,47 +72,47 @@ For simple operations and logging. Allowed operations:
 
 Example:
 ```json
-{{
+{
   "name": "getPublicIP",
   "type": "custom",
   "operation": "rest:get:https://ipinfo.io/json"
-}}
+}
 ```
 
 #### 2. REST Functions (`"type": "rest"`)
 For OpenAPI-based services: `<openapi-url>#<operation-id>`
 ```json
-{{
+{
   "name": "getPetById",
   "type": "rest",
   "operation": "https://petstore.swagger.io/v2/swagger.json#getPetById"
-}}
+}
 ```
 
 #### 3. RPC Functions (`"type": "rpc"`)
 For gRPC services: `<proto-file>#<ServiceName>#<MethodName>`
 ```json
-{{
+{
   "name": "listUsers",
   "type": "rpc",
   "operation": "file://myuserservice.proto#UserService#ListUsers"
-}}
+}
 ```
 
 ### Function Arguments & Data Binding
 Functions can receive arguments from workflow state data:
 
 ```json
-{{
-  "functionRef": {{
+{
+  "functionRef": {
     "refName": "pushData",
-    "arguments": {{
+    "arguments": {
       "city": ".ip_info.city",
       "ip": ".ip_info.ip",
       "timestamp": ".current_time"
-    }}
-  }}
-}}
+    }
+  }
+}
 ```
 
 **Data Binding Rules:**
@@ -130,18 +130,18 @@ Errors MUST be defined in the root `errors` array with these required fields:
 
 ```json
 "errors": [
-  {{
+  {
     "name": "serviceUnavailable",
     "code": "503"
-  }},
-  {{
+  },
+  {
     "name": "unauthorized",
     "code": "401"
-  }},
-  {{
+  },
+  {
     "name": "notFound",
     "code": "404"
-  }}
+  }
 ]
 ```
 
@@ -150,14 +150,14 @@ Use `onErrors` array in states to handle specific errors:
 
 ```json
 "onErrors": [
-  {{
+  {
     "errorRef": "serviceUnavailable",
     "transition": "retryState"
-  }},
-  {{
+  },
+  {
     "errorRef": "unauthorized",
     "transition": "authErrorState"
-  }}
+  }
 ]
 ```
 
@@ -181,40 +181,40 @@ Every state MUST have these required fields:
 #### Operation State (most common)
 Executes functions and handles business logic:
 ```json
-{{
+{
   "name": "getPublicIP",
   "type": "operation",
   "actions": [
-    {{
-      "functionRef": {{
+    {
+      "functionRef": {
         "refName": "getIP"
-      }}
-    }}
+      }
+    }
   ],
   "onErrors": [
-    {{
+    {
       "errorRef": "serviceUnavailable",
       "transition": "retryState"
-    }}
+    }
   ],
   "transition": "processIPData"
-}}
+}
 ```
 
 #### End State Example
 ```json
-{{
+{
   "name": "workflowComplete",
   "type": "operation",
   "actions": [
-    {{
-      "functionRef": {{
+    {
+      "functionRef": {
         "refName": "logCompletion"
-      }}
-    }}
+      }
+    }
   ],
   "end": true
-}}
+}
 ```
 
 ### State Validation Rules:
@@ -227,7 +227,7 @@ Executes functions and handles business logic:
 """
 
 @orchestrator_mcp.tool()
-def creation_workflow_rules(session_id: str) -> Dict[str, Any]:
+def creation_workflow_rules(session_id: str) -> str:
     """
     Get comprehensive orchestrator workflow creation rules and validation requirements.
     This tool provides detailed specifications for creating valid workflows including:

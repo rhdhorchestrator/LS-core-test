@@ -17,9 +17,8 @@ mcp.mount(orchestrator_mcp, prefix="orchestrator")
 
 
 
-
 if __name__ == "__main__":
     mcp.run(
             transport="http",
-            host="0.0.0.0",  # Changed from 127.0.0.1 to allow external connections
+            host="0.0.0.0",  
         )
