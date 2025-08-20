@@ -1,6 +1,6 @@
 services:
   llama-stack:
-    image: docker.io/llamastack/distribution-starter
+    image: docker.io/llamastack/distribution-starter:0.2.18
     container_name: llama-stack
     ports:
       - "8321:8321"
@@ -10,6 +10,8 @@ services:
     entrypoint: ["python", "-m", "llama_stack.core.server.server"]
     command: ["/app-root/run.yaml", "--port", "8321"]
     environment:
+      - VERTEXAI_ACCESS_TOKEN=${VERTEXAI_ACCESS_TOKEN}
+      - VERTEXAI_PROJECT=${VERTEXAI_PROJECT}
       - LLAMA_STACK_LOG=DEBUG
       - VLLM_URL=${VLLM_URL}
       - VLLM_API_TOKEN=test

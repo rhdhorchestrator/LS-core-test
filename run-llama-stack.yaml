@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 image_name: ollama-llama-stack-config
 apis:
   - agents
@@ -52,6 +52,12 @@ providers:
         max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
         api_token: ${env.VLLM_API_TOKEN:=fake}
         tls_verify: ${env.VLLM_TLS_VERIFY:=false}
+
+    - provider_id: google-vertex
+      provider_type: remote::vertexai
+      config:
+        project: ${env.VERTEXAI_PROJECT}
+        region: ${env.VERTEXAI_REGION:=us-east5}
 
   tool_runtime:
     - provider_id: model-context-protocol
