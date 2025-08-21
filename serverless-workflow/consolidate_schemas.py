@@ -7,9 +7,8 @@ by resolving $ref references and merging definitions into a single schema.
 
 import json
 import os
-import re
-from typing import Dict, Any, Set
 from pathlib import Path
+from typing import Any, Dict, Set
 
 
 class SchemaConsolidator:
@@ -24,7 +23,7 @@ class SchemaConsolidator:
         if filename not in self.schemas:
             file_path = self.schema_dir / filename
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, "r") as f:
                     self.schemas[filename] = json.load(f)
                 print(f"Loaded schema: {filename}")
             except FileNotFoundError:
@@ -34,26 +33,30 @@ class SchemaConsolidator:
 
     def extract_ref_filename(self, ref: str) -> str:
         """Extract filename from $ref string."""
-        # Handle refs like "secrets.json#/secrets" or "common.json#/definitions/metadata"
-        if '#' in ref:
-            return ref.split('#')[0]
+        # Handle refs like "secrets.json#/secrets" or
+        # "common.json#/definitions/metadata"
+        if "#" in ref:
+            return ref.split("#")[0]
         return ref
 
     def extract_ref_path(self, ref: str) -> str:
         """Extract JSON path from $ref string."""
-        # Handle refs like "secrets.json#/secrets" or "common.json#/definitions/metadata"
-        if '#' in ref:
-            return ref.split('#')[1]
+        # Handle refs like "secrets.json#/secrets" or
+        # "common.json#/definitions/metadata"
+        if "#" in ref:
+            return ref.split("#")[1]
         return ""
 
-    def resolve_external_refs(self, schema: Dict[str, Any], current_file: str = "") -> Dict[str, Any]:
+    def resolve_external_refs(
+        self, schema: Dict[str, Any], current_file: str = ""
+    ) -> Dict[str, Any]:
         """Recursively resolve external $ref references."""
         if isinstance(schema, dict):
-            if '$ref' in schema:
-                ref = schema['$ref']
+            if "$ref" in schema:
+                ref = schema["$ref"]
 
                 # Skip internal references (starting with #)
-                if ref.startswith('#'):
+                if ref.startswith("#"):
                     return schema
 
                 # Extract filename and path
@@ -68,12 +71,15 @@ class SchemaConsolidator:
                         # Navigate to the specific path in the referenced schema
                         target = ref_schema
                         if ref_path:
-                            path_parts = ref_path.strip('/').split('/')
+                            path_parts = ref_path.strip("/").split("/")
                             for part in path_parts:
                                 if part in target:
                                     target = target[part]
                                 else:
-                                    print(f"Warning: Path {ref_path} not found in {ref_file}")
+                                    print(
+                                        f"Warning: Path {ref_path} not found in "
+                                        f"{ref_file}"
+                                    )
                                     return schema
 
                         # Recursively resolve refs in the target
@@ -100,25 +106,31 @@ class SchemaConsolidator:
 
     def process_schema_definitions(self, schema: Dict[str, Any], filename: str):
         """Extract and merge definitions from a schema into consolidated definitions."""
-        if 'definitions' in schema:
-            for def_name, def_value in schema['definitions'].items():
+        if "definitions" in schema:
+            for def_name, def_value in schema["definitions"].items():
                 # Create unique key to avoid conflicts
                 unique_key = f"{filename.replace('.json', '')}_{def_name}"
-                self.consolidated_definitions[unique_key] = self.resolve_external_refs(def_value, filename)
+                self.consolidated_definitions[unique_key] = self.resolve_external_refs(
+                    def_value, filename
+                )
                 print(f"Added definition: {unique_key}")
 
-    def update_internal_refs(self, schema: Dict[str, Any], filename: str) -> Dict[str, Any]:
+    def update_internal_refs(
+        self, schema: Dict[str, Any], filename: str
+    ) -> Dict[str, Any]:
         """Update internal references to point to consolidated definitions."""
         if isinstance(schema, dict):
-            if '$ref' in schema:
-                ref = schema['$ref']
+            if "$ref" in schema:
+                ref = schema["$ref"]
 
                 # Handle internal references
-                if ref.startswith('#/definitions/'):
-                    def_name = ref.replace('#/definitions/', '')
+                if ref.startswith("#/definitions/"):
+                    def_name = ref.replace("#/definitions/", "")
                     # Update to use the prefixed definition name
-                    new_ref = f"#/definitions/{filename.replace('.json', '')}_{def_name}"
-                    return {'$ref': new_ref}
+                    new_ref = (
+                        f"#/definitions/{filename.replace('.json', '')}_{def_name}"
+                    )
+                    return {"$ref": new_ref}
 
                 return schema
             else:
@@ -146,7 +158,7 @@ class SchemaConsolidator:
         # First pass: collect all definitions from all referenced schemas
         print("\n--- Collecting definitions from all schemas ---")
         for filename in os.listdir(self.schema_dir):
-            if filename.endswith('.json'):
+            if filename.endswith(".json"):
                 schema = self.load_schema(filename)
                 self.process_schema_definitions(schema, filename)
 
@@ -159,20 +171,22 @@ class SchemaConsolidator:
         final_schema = self.update_internal_refs(resolved_main, main_schema_file)
 
         # Add all consolidated definitions
-        if 'definitions' not in final_schema:
-            final_schema['definitions'] = {}
+        if "definitions" not in final_schema:
+            final_schema["definitions"] = {}
 
-        final_schema['definitions'].update(self.consolidated_definitions)
+        final_schema["definitions"].update(self.consolidated_definitions)
 
-        print(f"\n--- Consolidation complete ---")
+        print("\n--- Consolidation complete ---")
         print(f"Total definitions consolidated: {len(self.consolidated_definitions)}")
 
         return final_schema
 
-    def save_consolidated_schema(self, consolidated_schema: Dict[str, Any], output_file: str):
+    def save_consolidated_schema(
+        self, consolidated_schema: Dict[str, Any], output_file: str
+    ):
         """Save the consolidated schema to a file."""
         output_path = output_file
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(consolidated_schema, f, indent=2)
         print(f"Consolidated schema saved to: {output_path}")
 
@@ -191,7 +205,9 @@ def main():
         consolidated = consolidator.consolidate("workflow.json")
 
         # Save the result
-        consolidator.save_consolidated_schema(consolidated, "consolidated_workflow_schema.json")
+        consolidator.save_consolidated_schema(
+            consolidated, "consolidated_workflow_schema.json"
+        )
         print("\nConsolidation completed successfully!")
     except Exception as e:
         print(f"Error during consolidation: {e}")
