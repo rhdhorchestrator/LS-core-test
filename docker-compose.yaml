@@ -1,6 +1,7 @@
 secrets:
   gcp-credentials:
     file: ~/.config/gcloud/application_default_credentials.json
+    x-podman.relabel: Z
 
 services:
   llama-stack:
