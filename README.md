@@ -17,10 +17,16 @@ This project creates a Docker Compose setup with two main services:
 
 ### Before starting env variables:
 
+
 ```
 export VLLM_URL="http://SERVER_IP:11434/v1"
 export VERTEXAI_PROJECT="myproject"
-export VERTEXAI_ACCESS_TOKEN=$(gcloud auth print-access-token)
+```
+
+If using google, check that your google cloud account is running correctly:
+
+```
+gcloud auth list
 ```
 
 ### Using podman-compose
