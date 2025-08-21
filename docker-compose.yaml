@@ -1,3 +1,7 @@
+secrets:
+  gcp-credentials:
+    file: ~/.config/gcloud/application_default_credentials.json
+
 services:
   llama-stack:
     image: docker.io/llamastack/distribution-starter:0.2.18
@@ -10,14 +14,16 @@ services:
     entrypoint: ["python", "-m", "llama_stack.core.server.server"]
     command: ["/app-root/run.yaml", "--port", "8321"]
     environment:
-      - VERTEXAI_ACCESS_TOKEN=${VERTEXAI_ACCESS_TOKEN}
       - VERTEXAI_PROJECT=${VERTEXAI_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp-credentials
       - LLAMA_STACK_LOG=DEBUG
       - VLLM_URL=${VLLM_URL}
       - VLLM_API_TOKEN=test
       - VLLM_MAX_TOKENS=4096
       - VLLM_TLS_VERIFY=false
       - INFERENCE_MODEL=gemma3:27b-it-qat
+    secrets:
+      - gcp-credentials
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8321/v1/health"]
       interval: 5s
