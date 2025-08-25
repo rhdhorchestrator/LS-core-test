@@ -41,6 +41,7 @@ services:
       - "8080:8080"
     volumes:
       - ./config.yaml:/app-root/lightspeed-stack.yaml:Z
+      - ./lightspeed_system_prompt.txt:/app-root/lightspeed_system_prompt.txt:Z
     depends_on:
       llama-stack:
         condition: service_healthy
