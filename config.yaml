@@ -6,6 +6,9 @@ service:
   workers: 1
   color_log: true
   access_log: true
+customization:
+  # system-prompt from here: https://github.com/road-core/service/blob/9d65d15a4d1dec47e5aac15ee86fef39db975006/ols/customize/rhdh/prompts.py#L14
+  system_prompt_path: lightspeed_system_prompt.txt
 llama_stack:
   use_as_library_client: false
   # url: http://llama-stack:8321
