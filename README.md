@@ -18,10 +18,12 @@ This project creates a Docker Compose setup with two main services:
 ### Requirements:
 - podman-compose v1.5.0+
 
-### OLLAMA running locally
+### OLLAMA (running locally)
 ```
 export VLLM_URL="http://host.containers.internal:11434/v1"
 ```
+
+More info: https://llama-stack.readthedocs.io/en/latest/providers/inference/remote_vllm.html
 
 ### Vertex AI running in GCP
 ```
@@ -34,6 +36,8 @@ gcloud auth list
 # From https://console.cloud.google.com/home/dashboard
 export VERTEXAI_PROJECT="myproject"
 ```
+
+More info: https://llama-stack.readthedocs.io/en/latest/providers/inference/remote_vertexai.html
 
 ### Using podman-compose
 
