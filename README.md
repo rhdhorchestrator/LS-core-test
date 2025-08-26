@@ -142,18 +142,23 @@ source test-functions.sh
 # Source the functions
 source test-functions.sh
 
-# List available models
-llama::list_models
-# Output: gemma3:27b-it-qat
-
 # List providers
 llama::list_providers
 # Output: 
-# ollama
-# model-context-protocol
 # meta-reference
+# vllm-inference
+# google-vertex
+# model-context-protocol
+#meta-reference
 
-# Test chat completion (may require Ollama to be running with the model)
+# List available models from providers
+llama::list_models
+# Output: vertex_ai/gemini-2.5-flash
+
+# set model for next function calls
+export LLAMA_MODEL=vertex_ai/gemini-2.5-flash
+
+# Test chat completion (requires correct LLAMA_MODEL env variable)
 llama::chat_completion
 ```
 
