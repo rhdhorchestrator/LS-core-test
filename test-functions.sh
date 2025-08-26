@@ -188,7 +188,7 @@ llama::list_providers_full() {
 
 llama::list_tools() {
     debug_print "GET ${LLAMASTACK_BASE_URL}/v1/tool-runtime/list-tools"
-    api_curl GET "${LLAMASTACK_BASE_URL}/v1/tool-runtime/list-tools" | jq -r '.data[]'
+    api_curl GET "${LLAMASTACK_BASE_URL}/v1/tool-runtime/list-tools" | jq -r '.data[] | "Name: \(.identifier)\nDescription: \(.description)\nArguments: \(.parameters | map("  - \(.name) (\(.parameter_type)): \(.description)") | join("\n"))\n"'
 }
 
 llama::list_toolgroups() {

@@ -52,7 +52,7 @@ SAMPLES = {category: WorkflowExample.load(category) for category in CATEGORIES}
 
 
 @orchestrator_mcp.tool()
-def orchestrator_get_sample_workflow(
+def get_sample_workflow(
     session_id: str,
     category: Literal[CATEGORIES],
 ) -> str:

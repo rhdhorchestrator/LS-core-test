@@ -1,7 +1,10 @@
 import json
 import logging
+import uuid
 from pathlib import Path
 
+import cairosvg
+from fastmcp.server.context import Context
 from playwright.async_api import async_playwright
 
 from .orchestrator_service import orchestrator_mcp
@@ -14,6 +17,33 @@ class WorkflowRenderer:
         self.html_path = (
             Path(__file__).parent.parent / "assets" / "workflow-renderer" / "index.html"
         )
+        self.workflows_dir = Path(__file__).parent.parent / "assets" / "workflows"
+
+    async def render_workflow_to_png_file(self, workflow_data: str) -> str:
+        """
+        Render workflow data to PNG file and return the file path
+
+        Args:
+            workflow_data (str): JSON string of workflow data
+
+        Returns:
+            str: Path to the saved PNG file
+        """
+        # Generate unique filename
+        file_id = str(uuid.uuid4())
+        png_path = self.workflows_dir / f"{file_id}.png"
+
+        # Ensure the directory exists
+        self.workflows_dir.mkdir(parents=True, exist_ok=True)
+
+        svg = await self.render_workflow_to_svg(workflow_data)
+        png_bytes = cairosvg.svg2png(bytestring=svg.encode("utf-8"))
+
+        # Save to file
+        with open(png_path, "wb") as f:
+            f.write(png_bytes)
+
+        return str(png_path)
 
     async def render_workflow_to_svg(self, workflow_data: str) -> str:
         """
@@ -52,16 +82,17 @@ class WorkflowRenderer:
             try:
                 # Example rendering
                 # await page.evaluate("""
-                #     render_workflow(
-                #         document.getElementById("renderWorkflow"),
-                #         JSON.stringify(sample_data)
-                #     );
+                # render_workflow(
+                #     document.getElementById("renderWorkflow"),
+                #     JSON.stringify(sample_data)
+                # );
                 # """)
 
                 await page.evaluate(f"""
+                    let workflow_data = {workflow_data};
                     render_workflow(
                         document.getElementById("renderWorkflow"),
-                        {workflow_data}
+                        JSON.stringify(workflow_data)
                     );
                 """)
 
@@ -92,17 +123,22 @@ class WorkflowRenderer:
 
 
 @orchestrator_mcp.tool()
-async def orchestrator_preview_workflow(session_id: str, workflow: str) -> str:
+async def preview_workflow(ctx: Context, session_id: str, workflow: str) -> str:
     """
-    Generate SVG preview of a orchestrator workflow.
+    Generate PNG preview of a orchestrator workflow.
 
     Args:
         session_id: Session identifier for tracking
         workflow: JSON string representing the serverless workflow
 
     Returns:
-        str: SVG content of the rendered workflow
+        str: URL of the PNG image
     """
+    host = ctx.get_http_request().url
+    hostname = host.hostname
+    if hostname == "host.docker.internal":
+        hostname = "localhost"
+
     try:
         logger.info(f"Generating workflow preview for session {session_id}")
 
@@ -113,12 +149,17 @@ async def orchestrator_preview_workflow(session_id: str, workflow: str) -> str:
             logger.error(f"Invalid JSON workflow: {e}")
             raise ValueError(f"Invalid JSON workflow: {e}")
 
-        # Create renderer and generate SVG
+        # Create renderer and generate PNG file
         renderer = WorkflowRenderer()
-        svg_content = await renderer.render_workflow_to_svg(workflow)
+        png_path = await renderer.render_workflow_to_png_file(workflow)
 
-        logger.info(f"Successfully generated SVG for session {session_id}")
-        return svg_content
+        filename = Path(png_path).name
+        image_url = f"http://{hostname}:{host.port}/static/{filename}"
+
+        logger.info(
+            f"Successfully generated PNG for session {session_id} at {image_url}"
+        )
+        return image_url
 
     except Exception as e:
         logger.error(f"Error generating workflow preview for session {session_id}: {e}")
