@@ -18,6 +18,44 @@ class WorkflowRenderer:
             Path(__file__).parent.parent / "assets" / "workflow-renderer" / "index.html"
         )
         self.workflows_dir = Path(__file__).parent.parent / "assets" / "workflows"
+        self._browser = None
+        self._page = None
+        self._playwright = None
+
+    async def __init_browser(self):
+        """
+        Initialize browser and load the workflow renderer page just once
+
+        Context: editor.js is 20MB, (yes, you read correct) and
+        we need to cached if not the timeouts happens)
+        """
+
+        if self._browser is None:
+            logger.info("Initializing browser...")
+            self._playwright = await async_playwright().start()
+            self._browser = await self._playwright.chromium.launch()
+            self._page = await self._browser.new_page()
+
+            self._page.on(
+                "console",
+                lambda msg: logger.info(f"Browser console [{msg.type}]: {msg.text}"),
+            )
+            self._page.on(
+                "pageerror", lambda err: logger.error(f"Browser error: {err}")
+            )
+
+            logger.info(f"Loading HTML file: file://{self.html_path.absolute()}")
+            await self._page.goto(f"file://{self.html_path.absolute()}")
+
+            # Wait for editor to initialize
+            logger.info("Waiting for editor to initialize...")
+            await self._page.wait_for_function("typeof render_workflow === 'function'")
+            await self._page.wait_for_function("ready(); EditorIsReady === true")
+            logger.info("Browser initialized and page loaded")
+
+    @property
+    def browser(self):
+        return self._browser
 
     async def render_workflow_to_png_file(self, workflow_data: str) -> str:
         """
@@ -56,70 +94,40 @@ class WorkflowRenderer:
             str: SVG content
         """
         logger.info("Starting workflow rendering process...")
-        logger.info(f"HTML path: {self.html_path.absolute()}")
 
-        async with async_playwright() as p:
-            logger.info("Launching headless browser...")
-            browser = await p.chromium.launch()
-            page = await browser.new_page()
+        await self.__init_browser()
 
-            page.on(
-                "console",
-                lambda msg: logger.info(f"Browser console [{msg.type}]: {msg.text}"),
+        try:
+            await self._page.evaluate(f"""
+                let workflow_data = {workflow_data};
+                render_workflow(
+                    document.getElementById("renderWorkflow"),
+                    JSON.stringify(workflow_data)
+                );
+            """)
+
+            # Get the SVG content
+            await self._page.wait_for_function(
+                "document.getElementById('renderWorkflow')."
+                "querySelector('svg') !== null"
             )
-            page.on("pageerror", lambda err: logger.error(f"Browser error: {err}"))
-
-            # Load the HTML file
-            logger.info(f"Loading HTML file: file://{self.html_path.absolute()}")
-            await page.goto(f"file://{self.html_path.absolute()}")
-
-            # Wait for editor to initialize
-            logger.info("Waiting for editor to initialize...")
-            await page.wait_for_function("typeof render_workflow === 'function'")
-            await page.wait_for_function("ready(); EditorIsReady === true")
-
-            # Execute the workflow rendering on page load
-            try:
-                # Example rendering
-                # await page.evaluate("""
-                # render_workflow(
-                #     document.getElementById("renderWorkflow"),
-                #     JSON.stringify(sample_data)
-                # );
-                # """)
-
-                await page.evaluate(f"""
-                    let workflow_data = {workflow_data};
-                    render_workflow(
-                        document.getElementById("renderWorkflow"),
-                        JSON.stringify(workflow_data)
-                    );
-                """)
-
-                # Get the SVG content
-                await page.wait_for_function(
-                    "document.getElementById('renderWorkflow')."
-                    "querySelector('svg') !== null"
-                )
-                svg_content = await page.evaluate(
-                    "document.getElementById('renderWorkflow').innerHTML"
-                )
-            except Exception as e:
-                logger.error(f"Error calling render_workflow: {e}")
-                # Try to get any error messages from the page
-                errors = await page.evaluate(
-                    "document.querySelector('#renderWorkflow').innerHTML"
-                )
-                logger.info(f"Container content: {errors}")
-                raise
-
-            logger.info(
-                f"SVG generated, length: "
-                f"{len(svg_content) if svg_content else 0} characters"
+            svg_content = await self._page.evaluate(
+                "document.getElementById('renderWorkflow').innerHTML"
             )
-            await browser.close()
-            logger.info("Browser closed")
-            return svg_content
+        except Exception as e:
+            logger.error(f"Error calling render_workflow: {e}")
+            # Try to get any error messages from the page
+            errors = await self._page.evaluate(
+                "document.querySelector('#renderWorkflow').innerHTML"
+            )
+            logger.info(f"Container content: {errors}")
+            raise
+
+        logger.info(
+            f"SVG generated, length: "
+            f"{len(svg_content) if svg_content else 0} characters"
+        )
+        return svg_content
 
 
 @orchestrator_mcp.tool()
